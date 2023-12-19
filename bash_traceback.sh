@@ -6,34 +6,41 @@
 set -o errtrace
 
 print_environment() {
-  local -a _output_array
-  _output_array=(
+  local -a _output
+  _output=(
     '=== ENVIRONMENT ==='
     "$(set -o posix ; set)"
-    #"$(lowercase_variables)"
     '=== ENVIRONMENT ==='
   )
-  printf '%s\n' "${_output_array[@]}"
+  printf '%s\n' "${_output[@]}"
 }
 
 print_traceback () {
-  local _code="${1:-0}"
-  local -a _output_array
+  local -a _output
+  _lineno=${1}
+  _exit_code=${2}
 
-  ## Workaround for read EOF combo tripping traps
-  ((_code)) || return "${_code}"
-
-  _output_array+=(
+  _output+=(
     '=== TRACEBACK ==='
     "CLI_arguments  : $(tr '\0' ' ' < /proc/$$/cmdline)"
-    "exit_code      : ${_code}"
+    "exit_code      : ${_exit_code}"
     "failed_command : ${BASH_COMMAND}"
     'stacktrace     :'
   )
-  for i in "${!FUNCNAME[@]}"; do
-    _output_array+=("  - ${BASH_SOURCE[i]}:${BASH_LINENO[i]}:${FUNCNAME[i]}")
-  done
-  _output_array+=('=== TRACEBACK ===')
 
-  printf '%s\n' "${_output_array[@]}"
+  # slice arrays
+  # The first element is the print_traceback function which we don't need it in the output
+  _funcname=("${FUNCNAME[@]:1}")
+  _bash_source=("${BASH_SOURCE[@]:1}")
+  _bash_lineno=("${BASH_LINENO[@]:1}")
+  for (( i=0; i<"${#_funcname[@]}"; ++i ))
+  #for (( i="${#_funcname[@]}"-1; i>=0; i-- ))
+  do
+    if [[ "${_bash_lineno[$i]}" -eq "${_lineno}" ]]; then
+      continue
+    fi
+    _output+=("  - ${_bash_source[i]}:${BASH_LINENO[i]}:${_funcname[i]}")
+  done
+  _output+=('=== TRACEBACK ===')
+  printf '%s\n' "${_output[@]}" > /dev/stderr
 }

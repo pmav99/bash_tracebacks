@@ -5,6 +5,15 @@ set -euo pipefail
 
 source ./source_code.sh
 
+source ./bash_traceback.sh
+
+throw_exception () {
+  print_environment
+  print_traceback "${1}" "${2}"
+}
+
+trap 'throw_exception $LINENO ${?}' ERR
+
 # -----
 echo 'START'
 
