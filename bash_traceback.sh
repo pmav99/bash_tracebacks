@@ -9,9 +9,8 @@ print_environment() {
   local _stream="${1:-/dev/stderr}"
   local -a _output
   _output=(
-    '=== ENVIRONMENT ==='
+    '## ENVIRONMENT ##'
     "$(declare -p)"
-    '=== ENVIRONMENT ==='
   )
   printf '%s\n' "${_output[@]}" > "${_stream}"
 }
@@ -22,11 +21,10 @@ print_environment() {
 #     print_variables aaa bbb ccc
 print_variables () {
   local -a variables=( "${@}" )
-  local -a output=( '=== VARIABLES ===' )
+  local -a output=( '## VARIABLES' )
   for var in "${variables[@]}"; do
     output+=( " - ${var}=${!var}" )
   done
-  output+=( '=== VARIABLES ===' )
   printf "%s\n" "${output[@]}"
 }
 
@@ -40,11 +38,11 @@ print_traceback () {
   # declare -p FUNCNAME
 
   local -a _output+=(
-    '=== TRACEBACK ==='
-    "CLI_arguments  : $(tr '\0' ' ' < /proc/$$/cmdline)"
-    "exit_code      : ${_exit_code}"
-    "failed_command : ${BASH_COMMAND}"
-    'stacktrace     :'
+    '## TRACEBACK '
+    " - CLI_arguments  : $(tr '\0' ' ' < /proc/$$/cmdline)"
+    " - exit_code      : ${_exit_code}"
+    " - failed_command : ${BASH_COMMAND}"
+    ' - stacktrace     :'
   )
 
   local -ir _stack_size=${#FUNCNAME[@]}
@@ -68,9 +66,8 @@ print_traceback () {
     if [[ $_line -eq 0 ]]; then
       continue
     fi
-    _output+=("   ($_stack_index) $_src:$_line:$_func")
+    _output+=("    $_stack_index. $_src:$_line:$_func")
   done
 
-  _output+=('=== TRACEBACK ===')
   printf '%s\n' "${_output[@]}" > "${_stream}"
 }

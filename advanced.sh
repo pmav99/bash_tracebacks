@@ -17,7 +17,6 @@ throw_exception () {
   fi
   printf "%s\n" "${variables}" > /dev/stderr
   printf "%s\n" "${traceback}" > /dev/stderr
-
 }
 
 trap 'throw_exception $LINENO ${?}' ERR
