@@ -55,5 +55,6 @@ print_traceback () {
     _output+=("   ($_stack_index) $_src:$_line:$_func")
   done
 
+  _output+=('=== TRACEBACK ===')
   printf '%s\n' "${_output[@]}" > "${_stream}"
 }
