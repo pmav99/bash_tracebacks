@@ -12,11 +12,9 @@ throw_exception () {
   variables=$(print_variables aaa bbb ccc ddd eee)
   traceback="$(print_traceback "${1}" "${2}" /dev/stdout)"
   if [[ -x "$(command -v notify-send)" ]]; then
-    notify-send -- "${traceback}"
-    notify-send -- "${variables}"
+    notify-send -- "${traceback}" "${variables}"
   fi
-  printf "%s\n" "${variables}" > /dev/stderr
-  printf "%s\n" "${traceback}" > /dev/stderr
+  printf "%s\n%s\n" "${variables}" "${traceback}" > /dev/stderr
 }
 
 trap 'throw_exception $LINENO ${?}' ERR
