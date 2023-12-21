@@ -23,7 +23,7 @@ print_variables () {
   local -a variables=( "${@}" )
   local -a output=( '## VARIABLES' )
   for var in "${variables[@]}"; do
-    output+=( " - ${var}=${!var}" )
+    output+=( " - ${var}=${!var-__unset__}" )
   done
   printf "%s\n" "${output[@]}"
 }
