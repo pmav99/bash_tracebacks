@@ -9,7 +9,12 @@ source ./bash_traceback.sh
 
 throw_exception () {
   print_environment
-  print_traceback "${1}" "${2}"
+  traceback="$(print_traceback "${1}" "${2}" /dev/stdout)"
+  if [[ -x "$(command -v notify-send)" ]]; then
+    notify-send -- "${traceback}"
+  fi
+  printf "%s\n" "${traceback}" > /dev/stderr
+
 }
 
 trap 'throw_exception $LINENO ${?}' ERR
