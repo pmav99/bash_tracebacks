@@ -17,6 +17,7 @@ print_environment() {
 print_traceback () {
   local -ir _lineno=${1}
   local -ir _exit_code=${2}
+  local _stream="${3:-/dev/stderr}"
 
   # declare -p BASH_SOURCE
   # declare -p BASH_LINENO
@@ -54,5 +55,5 @@ print_traceback () {
     _output+=("   ($_stack_index) $_src:$_line:$_func")
   done
 
-  printf '%s\n' "${_output[@]}" > /dev/stderr
+  printf '%s\n' "${_output[@]}" > "${_stream}"
 }
