@@ -14,6 +14,6 @@ bbb=23
 ccc='asdfasdf'
 
 # <---- The next function call will eventually fail
-my_main_func "${aaa}" "${bbb}" "${ccc}"
+my_main "${aaa}" "${bbb}" "${ccc}"
 
 echo 'This is unreachable.'

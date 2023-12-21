@@ -2,9 +2,10 @@
 #
 
 set -euo pipefail
+source ./bash_traceback.sh
 
-my_main_func() {
-  echo Called with arguments: "${@}"
+my_main() {
+  echo main_func called with arguments: "${@}"
   middle
 }
 

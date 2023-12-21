@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-
-# Inspired by: https://github.com/bash-utilities/trap-failure/blob/714c6b9370df4e5e643bdc075c0db6bbe17555ed/failure.sh
 #
+# Inspired by: https://gist.github.com/akostadinov/33bb2606afe1b334169dfbf202991d36?permalink_comment_id=4726328#gistcomment-4726328
 
 set -o errtrace
 
@@ -16,11 +15,14 @@ print_environment() {
 }
 
 print_traceback () {
-  local -a _output
-  _lineno=${1}
-  _exit_code=${2}
+  local -ir _lineno=${1}
+  local -ir _exit_code=${2}
 
-  _output+=(
+  # declare -p BASH_SOURCE
+  # declare -p BASH_LINENO
+  # declare -p FUNCNAME
+
+  local -a _output+=(
     '=== TRACEBACK ==='
     "CLI_arguments  : $(tr '\0' ' ' < /proc/$$/cmdline)"
     "exit_code      : ${_exit_code}"
@@ -28,19 +30,29 @@ print_traceback () {
     'stacktrace     :'
   )
 
-  # slice arrays
-  # The first element is the print_traceback function which we don't need it in the output
-  _funcname=("${FUNCNAME[@]:1}")
-  _bash_source=("${BASH_SOURCE[@]:1}")
-  _bash_lineno=("${BASH_LINENO[@]:1}")
-  for (( i=0; i<"${#_funcname[@]}"; ++i ))
-  #for (( i="${#_funcname[@]}"-1; i>=0; i-- ))
-  do
-    if [[ "${_bash_lineno[$i]}" -eq "${_lineno}" ]]; then
+  local -ir _stack_size=${#FUNCNAME[@]}
+  local -i _i
+  local -i _stack_index=0
+  # we start the loop with 1 in order to skip the current function from the stacktrace
+  for (( _i = 1; _i <= _stack_size; _i++ )); do
+    # When print_traceback has been called from a trap callback then the
+    # BASH_LINENO of the callback function is going to be wrong.
+    # Its  actual value will be equal to the line number of the command that failed
+    # When that is the case we should just skip the callback stack (i.e the first stack),
+    if [[ "${_i}" -eq 1 && "${BASH_LINENO[$_i]}" -eq "${_lineno}" ]]; then
       continue
     fi
-    _output+=("  - ${_bash_source[i]}:${BASH_LINENO[i]}:${_funcname[i]}")
+    _stack_index+=1
+    local -i _line="${BASH_LINENO[$(( _i - 1 ))]}"
+    local _src="${BASH_SOURCE[$_i]:-(stdin)}"
+    local _func="${FUNCNAME[$_i]:-(__main__)}"
+    # The very last stack has a line number equal to 0 which shouldn't offer much value to users
+    # Therefore we remove it.
+    if [[ $_line -eq 0 ]]; then
+      continue
+    fi
+    _output+=("   ($_stack_index) $_src:$_line:$_func")
   done
-  _output+=('=== TRACEBACK ===')
+
   printf '%s\n' "${_output[@]}" > /dev/stderr
 }
