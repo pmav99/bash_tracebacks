@@ -8,11 +8,14 @@ source ./source_code.sh
 source ./bash_traceback.sh
 
 throw_exception () {
-  print_environment
+  #print_environment
+  variables=$(print_variables aaa bbb ccc)
   traceback="$(print_traceback "${1}" "${2}" /dev/stdout)"
   if [[ -x "$(command -v notify-send)" ]]; then
     notify-send -- "${traceback}"
+    notify-send -- "${variables}"
   fi
+  printf "%s\n" "${variables}" > /dev/stderr
   printf "%s\n" "${traceback}" > /dev/stderr
 
 }

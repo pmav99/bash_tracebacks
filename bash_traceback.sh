@@ -4,14 +4,30 @@
 
 set -o errtrace
 
+# Prints the whole environment in the specified stream (defaults to stderr)
 print_environment() {
+  local _stream="${1:-/dev/stderr}"
   local -a _output
   _output=(
     '=== ENVIRONMENT ==='
-    "$(set -o posix ; set)"
+    "$(declare -p)"
     '=== ENVIRONMENT ==='
   )
-  printf '%s\n' "${_output[@]}"
+  printf '%s\n' "${_output[@]}" > "${_stream}"
+}
+
+# Print the names and the values of the variables that are passed as arguments
+# For example if you are interested in printing the values of variables `aaa`, `bbb` and `ccc`
+# you would call it as
+#     print_variables aaa bbb ccc
+print_variables () {
+  local -a variables=( "${@}" )
+  local -a output=( '=== VARIABLES ===' )
+  for var in "${variables[@]}"; do
+    output+=( " - ${var}=${!var}" )
+  done
+  output+=( '=== VARIABLES ===' )
+  printf "%s\n" "${output[@]}"
 }
 
 print_traceback () {
